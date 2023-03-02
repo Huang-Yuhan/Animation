@@ -66,15 +66,24 @@ function imageload(img)
     context.drawImage(img,0,0);
     let copy=context.getImageData(0,0,img.width,img.height);
     context.clearRect(0,0,img.width,img.height);
-    for(let i=0;i<copy.data.length;i+=12)
+    for(let i=0;i<copy.data.length;i+=8)
         if(check(copy.data,i))
         {
         let index=i/4;
         let x=index%img.width;
         let y=Math.floor(index/img.width);
-        let ball=new ImageBall(x+cx-img.width/2,y+cy-img.height/2);
+        let ball=new ImageBall(x,y);
         ImageBalls.push(ball);
         }
+}
+
+function drawglow(x,y,color,alpha)                                              //绘制十字闪光
+{
+    context.beginPath();
+    context.arc(x,y,BallRadius,0,2*Math.PI);
+    context.globalAlpha=alpha;
+    context.fillStyle=color;
+    context.fill();
 }
 
 class ImageBall
@@ -84,14 +93,14 @@ class ImageBall
         this.dx=dx;
         this.dy=dy;
         this.r=BallRadius;
-        this.initialx=GetRandom(width);
-        this.initialy=GetRandom(height);
+        this.initialx=GetRandom(width)-(cx-img.width/2);
+        this.initialy=GetRandom(height)-(cy-img.height/2);
 
         this.initialcolor={r:GetRandom(255),g:GetRandom(255),b:GetRandom(255)};
         this.color={r:200,g:22,b:29};
 
-        this.x1=GetRandom(width);
-        this.y1=GetRandom(height);
+        this.x1=GetRandom(width)-(cx-img.width/2);
+        this.y1=GetRandom(height)-(cy-img.height/2);
     }
     draw(count)
     {
@@ -100,10 +109,7 @@ class ImageBall
         let point=this.pos_t(Math.sin(count/AnimationMax*Math.PI/2));
         let x=point.x;
         let y=point.y;
-        context.beginPath();
-        context.arc(x,y,this.r,0,2*Math.PI);
-        context.fillStyle=this.color_t(Math.sin(count/AnimationMax));
-        context.fill();
+        drawglow(x+cx-img.width/2,y+cy-img.height/2,this.color_t(Math.sin(count/AnimationMax)),Math.sqrt(count/AnimationMax));
     }
     pos_t(t)
     {
@@ -134,7 +140,11 @@ function animation(count)
 {
     //前多少次放动画
     //后面固定
+    canvas.width = document.body.clientWidth;
+    canvas.height = document.body.clientHeight;
     context.clearRect(0,0,canvas.width,canvas.height);
+    cx=canvas.width/2;
+    cy=canvas.height/2;
     if(count>AnimationMax) count=AnimationMax;
     for(let i=0;i<ImageBalls.length;i++)
     {
