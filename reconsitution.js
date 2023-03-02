@@ -25,7 +25,7 @@ img.src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEB
   * */
 
 const BallRadius=3;
-const AnimationMax=250;
+const AnimationMax=500;
 const LowerLimitOfTransparency=100;
 
 let canvas=document.querySelector("canvas");
@@ -66,7 +66,7 @@ function imageload(img)
     context.drawImage(img,0,0);
     let copy=context.getImageData(0,0,img.width,img.height);
     context.clearRect(0,0,img.width,img.height);
-    for(let i=0;i<copy.data.length;i+=8)
+    for(let i=0;i<copy.data.length;i+=40)
         if(check(copy.data,i))
         {
         let index=i/4;
@@ -78,12 +78,22 @@ function imageload(img)
 }
 
 function drawglow(x,y,color,alpha)                                              //绘制十字闪光
-{
-    context.beginPath();
-    context.arc(x,y,BallRadius,0,2*Math.PI);
-    context.globalAlpha=alpha;
-    context.fillStyle=color;
-    context.fill();
+{ 
+    let grd=context.createRadialGradient(x,y,BallRadius,x,y,BallRadius+20);
+    grd.addColorStop(0,color);
+    grd.addColorStop(1,"transparent");
+    context.fillStyle=grd;
+
+    let edge=20;
+    context.fillRect(x-1,y-edge,2,edge*2);
+
+    grd=context.createRadialGradient(x,y,2,x,y,BallRadius+10);
+    grd.addColorStop(0,color);
+    grd.addColorStop(1,"transparent");
+    context.fillStyle=grd;
+    context.fillRect(x-edge,y-1,edge*2,1*2);
+    context.fillRect(x-BallRadius,y-BallRadius,BallRadius*2,BallRadius*2);
+
 }
 
 class ImageBall
