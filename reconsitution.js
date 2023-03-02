@@ -17,15 +17,15 @@ img.src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEB
   * 3. 饱和度稍微低一些 亮度提高
   * 4. 圆点变成辉光？？？？（水平侧变得弱一点）
   * 5. 适配页面大小
-  * 6. 暗红色以及明度 亮度相近的几个颜色 比例达到70% 然后少点绿色，#C8161D。以这个颜色为中心去选
+  * 6. 暗红色以及明度 亮度相近的几个颜色 比例达到70% 然后少点绿色，#C8161D。以这个颜色为中心去选(颜色选择？？？？)
   *
   *
   *
   *
   * */
 
-const BallRadius=1.5;
-const AnimationMax=400;
+const BallRadius=3;
+const AnimationMax=250;
 const LowerLimitOfTransparency=100;
 
 let canvas=document.querySelector("canvas");
@@ -66,7 +66,7 @@ function imageload(img)
     context.drawImage(img,0,0);
     let copy=context.getImageData(0,0,img.width,img.height);
     context.clearRect(0,0,img.width,img.height);
-    for(let i=0;i<copy.data.length;i+=20)
+    for(let i=0;i<copy.data.length;i+=12)
         if(check(copy.data,i))
         {
         let index=i/4;
@@ -86,7 +86,10 @@ class ImageBall
         this.r=BallRadius;
         this.initialx=GetRandom(width);
         this.initialy=GetRandom(height);
-        this.color=getrgb(GetRandom(255),GetRandom(255),GetRandom(255));
+
+        this.initialcolor={r:GetRandom(255),g:GetRandom(255),b:GetRandom(255)};
+        this.color={r:200,g:22,b:29};
+
         this.x1=GetRandom(width);
         this.y1=GetRandom(height);
     }
@@ -99,7 +102,7 @@ class ImageBall
         let y=point.y;
         context.beginPath();
         context.arc(x,y,this.r,0,2*Math.PI);
-        context.fillStyle=this.color;
+        context.fillStyle=this.color_t(Math.sin(count/AnimationMax));
         context.fill();
     }
     pos_t(t)
@@ -109,6 +112,13 @@ class ImageBall
         let x=(1-t)*(1-t)*this.initialx+2*t*(1-t)*this.x1+t*t*this.dx;
         let y=(1-t)*(1-t)*this.initialy+2*t*(1-t)*this.y1+t*t*this.dy;
         return {x:x,y:y};
+    }
+    color_t(t)
+    {
+        let r=(1-t)*this.initialcolor.r+t*this.color.r;
+        let g=(1-t)*this.initialcolor.g+t*this.color.g;
+        let b=(1-t)*this.initialcolor.b+t*this.color.b;
+        return getrgb(r,g,b);
     }
 }
 
