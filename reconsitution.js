@@ -11,8 +11,8 @@ img.src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEB
   *
   * 需求：
   * 1. 圆点移动
-  *     贝塞尔曲线
-  *     非线性速度——开头慢，接近终点时慢一点
+  *     贝塞尔曲线      (done，二次贝塞尔曲线)
+  *     非线性速度——开头慢，接近终点时慢一点(done,用sin函数)
   * 2. 字体粗体描边
   * 3. 饱和度稍微低一些 亮度提高
   * 4. 圆点变成辉光？？？？（水平侧变得弱一点）
@@ -25,7 +25,7 @@ img.src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEB
   * */
 
 const BallRadius=1.5;
-const AnimationMax=100;
+const AnimationMax=400;
 const LowerLimitOfTransparency=100;
 
 let canvas=document.querySelector("canvas");
@@ -77,7 +77,6 @@ function imageload(img)
         }
 }
 
-
 class ImageBall
 {
     constructor(dx,dy)                                        //从随机位置到(dx,dy)
@@ -88,17 +87,28 @@ class ImageBall
         this.initialx=GetRandom(width);
         this.initialy=GetRandom(height);
         this.color=getrgb(GetRandom(255),GetRandom(255),GetRandom(255));
+        this.x1=GetRandom(width);
+        this.y1=GetRandom(height);
     }
     draw(count)
     {
         //计算在第count次时应该在的位置
         //(x1-x0,y1-y0)*count/AnimationMax+(x0,y0)
-        let x=(this.dx-this.initialx)*count/AnimationMax+this.initialx;
-        let y=(this.dy-this.initialy)*count/AnimationMax+this.initialy;
+        let point=this.pos_t(Math.sin(count/AnimationMax*Math.PI/2));
+        let x=point.x;
+        let y=point.y;
         context.beginPath();
         context.arc(x,y,this.r,0,2*Math.PI);
         context.fillStyle=this.color;
         context.fill();
+    }
+    pos_t(t)
+    {
+        //B2(t)=(1-t)*(1-t)*P0+2t(1-t)P1+t*t*P2
+        //P0是initial,P2是(dx,dy)
+        let x=(1-t)*(1-t)*this.initialx+2*t*(1-t)*this.x1+t*t*this.dx;
+        let y=(1-t)*(1-t)*this.initialy+2*t*(1-t)*this.y1+t*t*this.dy;
+        return {x:x,y:y};
     }
 }
 
